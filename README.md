@@ -49,11 +49,11 @@ This architecture ensures modularity, maintainability, and easy testing.
 git clone [git@github.com:lutireh/pettracker.git](https://github.com/lutireh/pettracker.git)
 ```
 
-### **2. Open in Android Studio
+### 2. Open in Android Studio
 
 Use Android Studio Iguana or newer.
 
-### **3. Build & Run
+### 3. Build & Run
 
 Just hit Run ▶️ and the app will install on your device or emulator.
 
