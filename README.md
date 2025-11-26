@@ -46,7 +46,7 @@ This architecture ensures modularity, maintainability, and easy testing.
 
 ### **1. Clone the repository**
 ```bash
-git clone [git@github.com:lutireh/pettracker.git](https://github.com/lutireh/pettracker.git)
+git clone https://github.com/lutireh/pettracker.git
 ```
 
 ### 2. Open in Android Studio
