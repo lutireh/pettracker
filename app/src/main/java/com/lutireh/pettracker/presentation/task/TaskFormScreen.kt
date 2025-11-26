@@ -3,10 +3,10 @@ package com.lutireh.pettracker.presentation.task
 import android.app.TimePickerDialog
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.runtime.collectAsState
+import com.lutireh.pettracker.presentation.pet.PetViewModel
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -15,7 +15,6 @@ import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDefaults
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -39,6 +38,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.DropdownMenuItem
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lutireh.pettracker.domain.model.PetTaskModel
 import com.lutireh.pettracker.domain.model.TaskType
@@ -51,14 +53,23 @@ import java.util.Locale
 @Composable
 fun TaskFormScreen(
     viewModel: TaskViewModel = hiltViewModel(),
+    petViewModel: PetViewModel = hiltViewModel(),
     onTaskSaved: () -> Unit = {},
     onError: () -> Unit = {},
 ) {
-    var petId by remember { mutableStateOf("") }
+    var petId by remember { mutableStateOf<Int>(0) }
     var type by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf<Long?>(null) }
     var notes by remember { mutableStateOf("") }
-    var reminderTime by remember { mutableStateOf("") }
+    var reminderTime by remember { mutableStateOf<Long?>(null) }
+
+    val pets = petViewModel.pets.collectAsState().value
+    var expandedPet by remember { mutableStateOf(false) }
+    var selectedPetName by remember { mutableStateOf("") }
+
+    val taskTypes = TaskType.entries.toTypedArray()
+    var expandedType by remember { mutableStateOf(false) }
+    var selectedTypeLabel by remember { mutableStateOf("") }
 
     val primaryColor = Color(0xFF96E1FF)
     val accentColor = Color(0xFFCB954A)
@@ -97,19 +108,86 @@ fun TaskFormScreen(
                 modifier = Modifier.padding(bottom = 24.dp)
             )
 
-            InputField(
-                value = petId,
-                onValueChange = { petId = it },
-                label = "Pet"
-            )
-            InputField(
-                value = type,
-                onValueChange = { type = it },
-                label = "Tipo de tarefa"
-            )
+            ExposedDropdownMenuBox(
+                expanded = expandedPet,
+                onExpandedChange = { expandedPet = !expandedPet },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+
+                OutlinedTextField(
+                    value = selectedPetName,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Pet") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedPet)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expandedPet,
+                    onDismissRequest = { expandedPet = false }
+                ) {
+                    pets.forEach { pet ->
+                        DropdownMenuItem(
+                            text = { Text(pet.name) },
+                            onClick = {
+                                selectedPetName = pet.name
+                                petId = pet.id   // salva o ID real
+                                expandedPet = false
+                            }
+                        )
+                    }
+                }
+            }
+            ExposedDropdownMenuBox(
+                expanded = expandedType,
+                onExpandedChange = { expandedType = !expandedType },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp)
+            ) {
+
+                OutlinedTextField(
+                    value = selectedTypeLabel,
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Tipo de tarefa") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandedType)
+                    },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expandedType,
+                    onDismissRequest = { expandedType = false }
+                ) {
+                    taskTypes.forEach { option ->
+                        DropdownMenuItem(
+                            text = { Text(option.name.replace("_", " ").lowercase().replaceFirstChar(Char::uppercase)) },
+                            onClick = {
+                                selectedTypeLabel = option.name
+                                type = option.name
+                                expandedType = false
+                            }
+                        )
+                    }
+                }
+            }
+
             TimestampInputField(
-                onTimestampSelected = { },
-                label = "Data"
+                label = "Data",
+                onTimestampSelected = { timestamp ->
+                    date = timestamp
+                }
             )
             InputField(
                 value = notes,
@@ -117,15 +195,17 @@ fun TaskFormScreen(
                 label = "Notas"
             )
             TimestampInputField(
-                onTimestampSelected = { },
-                label = "Hora do lembrete"
+                label = "Data e hora do lembrete",
+                onTimestampSelected = { timestamp ->
+                    reminderTime = timestamp
+                }
             )
             Button(
                 onClick = {
                     val task = PetTaskModel(
                         petId = petId,
                         type = TaskType.valueOf(type),
-                        date = date,
+                        date = date ?: System.currentTimeMillis(),
                         notes = notes,
                         reminderTime = reminderTime
                     )
@@ -207,17 +287,10 @@ fun TimestampInputField(
             .fillMaxWidth()
             .padding(vertical = 8.dp)
     ) {
-        Text(
-            label,
-            style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
-            color = textColor
-        )
-
-        Spacer(modifier = Modifier.height(6.dp))
 
         OutlinedTextField(
             value = formattedDate,
-            onValueChange = { onTimestampSelected },
+            onValueChange = {},
             modifier = Modifier
                 .fillMaxWidth()
                 .clickable { showDatePicker = true },
@@ -240,7 +313,7 @@ fun TimestampInputField(
         )
 
         if (showDatePicker) {
-            val datePickerState = rememberDatePickerState(
+            val dateState = rememberDatePickerState(
                 initialSelectedDateMillis = selectedTimestamp
             )
 
@@ -248,7 +321,7 @@ fun TimestampInputField(
                 onDismissRequest = { showDatePicker = false },
                 confirmButton = {
                     TextButton(onClick = {
-                        val pickedDate = datePickerState.selectedDateMillis
+                        val pickedDate = dateState.selectedDateMillis
                         if (pickedDate != null) {
                             calendar.timeInMillis = pickedDate
 
@@ -258,6 +331,7 @@ fun TimestampInputField(
                                     calendar.set(Calendar.HOUR_OF_DAY, hour)
                                     calendar.set(Calendar.MINUTE, minute)
                                     val newTimestamp = calendar.timeInMillis
+
                                     selectedTimestamp = newTimestamp
                                     onTimestampSelected(newTimestamp)
                                 },
@@ -266,24 +340,19 @@ fun TimestampInputField(
                                 true
                             ).show()
                         }
+
                         showDatePicker = false
                     }) {
-                        Text("OK", color = accentColor)
+                        Text("Ok")
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDatePicker = false }) {
-                        Text("Cancelar", color = accentColor)
+                        Text("Cancelar")
                     }
                 }
             ) {
-                DatePicker(
-                    state = datePickerState, colors = DatePickerDefaults.colors(
-                        selectedDayContainerColor = accentColor,
-                        selectedDayContentColor = Color.White,
-                        todayDateBorderColor = accentColor,
-                    )
-                )
+                DatePicker(state = dateState)
             }
         }
     }
