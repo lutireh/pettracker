@@ -26,5 +26,5 @@ class PetRepositoryImpl(val petDao: PetDAO) : IPetRepository {
 
     override suspend fun updatePet(pet: PetModel) = petDao.updatePet(pet.toEntity())
 
-    override suspend fun deletePet(pet: PetModel) = petDao.deletePet(pet.toEntity())
+    override suspend fun deletePet(petId: Int) = petDao.deletePet(petId)
 }

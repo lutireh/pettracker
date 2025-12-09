@@ -1,23 +1,19 @@
 package com.luiza.pettracker.presentation.pet
 
-import android.widget.GridLayout
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.snapping.SnapPosition
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.Pets
 import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.Bottom
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -35,7 +31,8 @@ import com.lutireh.pettracker.presentation.pet.PetViewModel
 fun PetListScreen(
     viewModel: PetViewModel = hiltViewModel(),
     onAddPetClick: () -> Unit = {},
-    onAddTaskClick: () -> Unit = {}
+    onAddTaskClick: () -> Unit = {},
+    onPetClick: (PetModel) -> Unit
 ) {
     val pets by viewModel.pets.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -88,8 +85,9 @@ fun PetListScreen(
                 pets.isEmpty() -> EmptyPetsState(onAddPetClick)
                 else -> PetsList(
                     pets = pets,
-                    onDelete = { viewModel.deletePet(it) },
-                    onAddPetClick = onAddPetClick
+                    onDelete = { viewModel.deletePet(it.id) },
+                    onAddPetClick = onAddPetClick,
+                    onPetClick = onPetClick
                 )
             }
         }
@@ -147,7 +145,8 @@ fun EmptyPetsState(
 fun PetsList(
     pets: List<PetModel>,
     onDelete: (PetModel) -> Unit,
-    onAddPetClick: () -> Unit
+    onAddPetClick: () -> Unit,
+    onPetClick: (PetModel) -> Unit
 ) {
     val iconColor = Color(0xFFB4444C)
     Box(
@@ -179,7 +178,10 @@ fun PetsList(
         ) {
             items(pets.size) { index ->
                 val pet = pets[index]
-                PetCard(pet, onDelete)
+                PetCard(
+                    pet = pet,
+                    onDelete= onDelete,
+                    onClick = { onPetClick(pet) })
             }
         }
     }
@@ -188,7 +190,8 @@ fun PetsList(
 @Composable
 fun PetCard(
     pet: PetModel,
-    onDelete: (PetModel) -> Unit
+    onDelete: (PetModel) -> Unit,
+    onClick: () -> Unit
 ) {
     val cardColor = Color(0xFFFFF6F1)
     val accentColor = Color(0xFFCB954A)
@@ -197,7 +200,8 @@ fun PetCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
+            .padding(vertical = 8.dp)
+            .clickable { onClick() },
         colors = CardDefaults.cardColors(containerColor = cardColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
         shape = RoundedCornerShape(16.dp)

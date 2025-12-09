@@ -138,7 +138,7 @@ fun TaskFormScreen(
                             text = { Text(pet.name) },
                             onClick = {
                                 selectedPetName = pet.name
-                                petId = pet.id   // salva o ID real
+                                petId = pet.id
                                 expandedPet = false
                             }
                         )
@@ -289,6 +289,7 @@ fun TimestampInputField(
     ) {
 
         OutlinedTextField(
+            label = { Text(label) },
             value = formattedDate,
             onValueChange = {},
             modifier = Modifier

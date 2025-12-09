@@ -9,6 +9,8 @@ import androidx.navigation.compose.rememberNavController
 import com.luiza.pettracker.presentation.pet.PetFormScreen
 import com.luiza.pettracker.presentation.pet.PetListScreen
 import com.lutireh.pettracker.presentation.ErrorScreen
+import com.lutireh.pettracker.presentation.pet.PetDetailsScreen
+import com.lutireh.pettracker.presentation.pet.PetEditScreen
 import com.lutireh.pettracker.presentation.task.TaskFormScreen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -23,8 +25,11 @@ class MainActivity : ComponentActivity() {
                 composable("pet_list") {
                     PetListScreen(
                         onAddPetClick = { navController.navigate("add_pet") },
-                        onAddTaskClick = { navController.navigate("add_task")}
-                        )
+                        onAddTaskClick = { navController.navigate("add_task") },
+                        onPetClick = { pet ->
+                            navController.navigate("pet_details/${pet.id}")
+                        }
+                    )
                 }
                 composable("add_pet") {
                     PetFormScreen(
@@ -51,6 +56,25 @@ class MainActivity : ComponentActivity() {
                                     inclusive = true
                                 }
                             }
+                        },
+                        onError = { navController.navigate("error_screen") }
+                    )
+                }
+                composable("pet_details/{petId}") { backStackEntry ->
+                    val petId = backStackEntry.arguments?.getString("petId")!!
+                    PetDetailsScreen(
+                        petId = petId,
+                        onBack = { navController.popBackStack() },
+                        onEdit = { navController.navigate("edit_pet/$petId") }
+                    )
+                }
+                composable("edit_pet/{petId}") { backStackEntry ->
+                    val petId = backStackEntry.arguments?.getString("petId")
+                    PetEditScreen(
+                        petId = petId,
+                        onBack = { navController.popBackStack() },
+                        onSaved = {
+                            navController.navigate("pet_list")
                         },
                         onError = { navController.navigate("error_screen") }
                     )

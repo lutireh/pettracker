@@ -9,6 +9,6 @@ interface IPetRepository {
     suspend fun getPetById(petId: Int): Flow<PetModel?>
     suspend fun addPet(pet: PetModel)
     suspend fun updatePet(pet: PetModel)
-    suspend fun deletePet(pet: PetModel)
+    suspend fun deletePet(petId: Int)
 
 }

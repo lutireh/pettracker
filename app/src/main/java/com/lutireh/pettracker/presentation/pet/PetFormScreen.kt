@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Error
@@ -14,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lutireh.pettracker.domain.model.PetModel
@@ -81,12 +83,14 @@ fun PetFormScreen(
             PetInputField(
                 value = age,
                 onValueChange = { age = it },
-                label = "Idade (anos)"
+                label = "Idade (anos)",
+                shouldShowNumberKeyboard = true
             )
             PetInputField(
                 value = weight,
                 onValueChange = { weight = it },
-                label = "Peso (kg)"
+                label = "Peso (kg)",
+                shouldShowNumberKeyboard = true
             )
             Button(
                 onClick = {
@@ -124,7 +128,8 @@ fun PetFormScreen(
 private fun PetInputField(
     value: String,
     onValueChange: (String) -> Unit,
-    label: String
+    label: String,
+    shouldShowNumberKeyboard: Boolean? = false
 ) {
     val borderColor = Color(0xFFCB954A)
     val textColor = Color(0xFF4A505D)
@@ -141,6 +146,9 @@ private fun PetInputField(
             focusedBorderColor = borderColor,
             unfocusedBorderColor = borderColor.copy(alpha = 0.4f),
             cursorColor = borderColor
+        ),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = if (shouldShowNumberKeyboard == true) KeyboardType.Number else KeyboardType.Text
         )
     )
 }

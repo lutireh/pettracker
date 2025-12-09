@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lutireh.pettracker.domain.model.PetModel
 import com.lutireh.pettracker.domain.usecases.pet.PetUseCases
+import com.lutireh.pettracker.presentation.isNumberInputNotValid
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,7 +48,7 @@ class PetViewModel @Inject constructor(
             try {
                 _isLoading.value = true
                 useCases.getPetById(petId).collect { selectedPet ->
-                    _selectedPet.value = selectedPet
+                    //  _selectedPet.value = selectedPet
                 }
             } catch (e: Exception) {
                 _isError.value = true
@@ -74,24 +75,13 @@ class PetViewModel @Inject constructor(
     }
 
     private fun validatePet(pet: PetModel): Boolean = with(pet) {
-        return (name.isEmpty() || breed.isNullOrEmpty() || age.isNullOrEmpty() || weight.isNullOrEmpty())
+        return (name.isEmpty() || breed.isNullOrEmpty() || isNumberInputNotValid(age)|| isNumberInputNotValid(weight))
     }
 
-    fun deletePet(pet: PetModel) {
+    fun deletePet(petId: Int) {
         viewModelScope.launch {
             try {
-                useCases.deletePet(pet)
-                loadPets()
-            } catch (e: Exception) {
-                _isError.value = true
-            }
-        }
-    }
-
-    fun updatePet(pet: PetModel) {
-        viewModelScope.launch {
-            try {
-                useCases.updatePetUseCase(pet)
+                useCases.deletePet(petId)
                 loadPets()
             } catch (e: Exception) {
                 _isError.value = true
