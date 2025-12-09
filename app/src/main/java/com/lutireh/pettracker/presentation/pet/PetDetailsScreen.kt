@@ -33,6 +33,7 @@ fun PetDetailsScreen(
     val accentColor = Color(0xFFCB954A)
     val backgroundColor = Color(0xFFF3F3F8)
     val primaryText = Color(0xFF4A505D)
+    val secondaryColor = Color(0xFF96E1FF)
 
     val pet by viewModel.selectedPet.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -58,7 +59,7 @@ fun PetDetailsScreen(
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onEdit,
-                containerColor = accentColor,
+                containerColor = secondaryColor,
                 contentColor = Color.White,
                 shape = CircleShape
             ) {

@@ -35,7 +35,7 @@ fun PetEditScreen(
 ) {
     val accentColor = Color(0xFFCB954A)
     val backgroundColor = Color(0xFFF3F3F8)
-    val primaryText = Color(0xFF4A505D)
+    val secondaryColor = Color(0xFF96E1FF)
 
     val pet by viewModel.selectedPet.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
@@ -81,7 +81,7 @@ fun PetEditScreen(
             EditPetContent(
                 pet = pet!!,
                 accentColor = accentColor,
-                primaryText = primaryText,
+                secondaryColor = secondaryColor,
                 onSave = { updatedPet ->
                     viewModel.updatePet(updatedPet)
                     onSaved()
@@ -96,7 +96,7 @@ fun PetEditScreen(
 fun EditPetContent(
     pet: PetModel,
     accentColor: Color,
-    primaryText: Color,
+    secondaryColor: Color,
     onSave: (PetModel) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -197,7 +197,7 @@ fun EditPetContent(
                 )
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = accentColor,
+                containerColor = secondaryColor,
                 contentColor = Color.White
             ),
             shape = RoundedCornerShape(50),

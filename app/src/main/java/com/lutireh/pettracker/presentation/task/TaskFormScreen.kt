@@ -8,9 +8,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.collectAsState
 import com.lutireh.pettracker.presentation.pet.PetViewModel
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBackIosNew
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -84,6 +87,15 @@ fun TaskFormScreen(
                         "🐾 Adicionar Tarefa",
                         color = Color.White,
                         fontWeight = FontWeight.Bold
+                    )
+                },
+                navigationIcon = {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBackIosNew,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier
+                            .size(16.dp)
                     )
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -172,7 +184,12 @@ fun TaskFormScreen(
                 ) {
                     taskTypes.forEach { option ->
                         DropdownMenuItem(
-                            text = { Text(option.name.replace("_", " ").lowercase().replaceFirstChar(Char::uppercase)) },
+                            text = {
+                                Text(
+                                    option.name.replace("_", " ").lowercase()
+                                        .replaceFirstChar(Char::uppercase)
+                                )
+                            },
                             onClick = {
                                 selectedTypeLabel = option.name
                                 type = option.name
