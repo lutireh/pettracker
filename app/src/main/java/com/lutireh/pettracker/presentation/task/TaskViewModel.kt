@@ -25,6 +25,24 @@ class TaskViewModel @Inject constructor(
     private val _tasksByPet = MutableStateFlow<List<PetTaskModel>>(emptyList())
     val tasksByPet: StateFlow<List<PetTaskModel>> = _tasksByPet.asStateFlow()
 
+    private val _allTasks = MutableStateFlow<List<PetTaskModel>>(emptyList())
+    val allTasks: StateFlow<List<PetTaskModel>> = _allTasks.asStateFlow()
+
+    fun getAllTasks() {
+        viewModelScope.launch {
+            try {
+                _isLoading.value = true
+                useCases.getAllTasksUseCase().collect { taskList ->
+                    _allTasks.value = taskList
+                    _isLoading.value = false
+                }
+            } catch (e: Exception) {
+                _isError.value = true
+                _isLoading.value = false
+            }
+        }
+    }
+
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
@@ -48,11 +66,12 @@ class TaskViewModel @Inject constructor(
                 _isLoading.value = true
                 useCases.getTaskByIdUseCase(id).collect { selectedTask ->
                     _selectedTask.value = selectedTask
+                    _isLoading.value = false
                 }
             } catch (e: Exception) {
                 _isError.value = true
+                _isLoading.value = false
             }
-            _isLoading.value = false
         }
     }
 
@@ -62,11 +81,12 @@ class TaskViewModel @Inject constructor(
                 _isLoading.value = true
                 useCases.getPetTaskByPetUseCase(petId).collect { task ->
                     _tasksByPet.value = task
+                    _isLoading.value = false
                 }
             } catch (e: Exception) {
                 _isError.value = true
+                _isLoading.value = false
             }
-            _isLoading.value = false
         }
     }
 

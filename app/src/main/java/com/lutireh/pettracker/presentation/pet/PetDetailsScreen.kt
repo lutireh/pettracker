@@ -34,6 +34,7 @@ fun PetDetailsScreen(
     petId: String,
     onBack: () -> Unit,
     onEdit: () -> Unit,
+    onManageTasks: () -> Unit,
     viewModel: PetDetailsViewModel = hiltViewModel(),
     taskViewModel: TaskViewModel = hiltViewModel()
 ) {
@@ -122,14 +123,21 @@ fun PetDetailsScreen(
                             }
                             
                             Spacer(Modifier.height(24.dp))
-                            Text(
-                                "Histórico e Agendamentos",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = primaryText,
-                                fontWeight = FontWeight.Bold,
+                            Row(
                                 modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Start
-                            )
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    "Agenda",
+                                    style = MaterialTheme.typography.titleLarge,
+                                    color = primaryText,
+                                    fontWeight = FontWeight.Bold,
+                                )
+                                TextButton(onClick = onManageTasks) {
+                                    Text("Gerenciar")
+                                }
+                            }
                             
                             if (tasks.isEmpty()) {
                                 Text(

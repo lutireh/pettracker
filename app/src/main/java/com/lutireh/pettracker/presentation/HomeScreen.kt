@@ -2,6 +2,7 @@ package com.lutireh.pettracker.presentation
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -21,7 +22,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
+import com.lutireh.pettracker.domain.model.PetModel
+import com.lutireh.pettracker.domain.model.PetTaskModel
 import com.lutireh.pettracker.domain.model.TaskType
+import com.lutireh.pettracker.presentation.task.TaskSummaryDialog
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -37,6 +41,9 @@ fun HomeScreen(
     val accentColor = Color(0xFFCB954A)
     val backgroundColor = Color(0xFFF3F3F8)
     val primaryText = Color(0xFF4A505D)
+
+    var selectedTaskForDialog by remember { mutableStateOf<PetTaskModel?>(null) }
+    var selectedPetForDialog by remember { mutableStateOf("") }
 
     Scaffold(
         topBar = {
@@ -86,18 +93,27 @@ fun HomeScreen(
                             )
                         }
 
-                        items(tasks) { dashboardTask ->
-                            DashboardTaskCard(
-                                dashboardTask = dashboardTask,
-                                primaryText = primaryText,
-                                accentColor = accentColor,
-                                primaryColor = primaryColor
+                        items(tasks) { event ->
+                            EventCard(
+                                event = event,
+                                onClick = {
+                                    selectedTaskForDialog = event.task
+                                    selectedPetForDialog = event.petName
+                                }
                             )
                         }
                     }
                 }
             }
         }
+    }
+
+    if (selectedTaskForDialog != null) {
+        TaskSummaryDialog(
+            task = selectedTaskForDialog!!,
+            petName = selectedPetForDialog,
+            onDismiss = { selectedTaskForDialog = null }
+        )
     }
 }
 
@@ -133,14 +149,16 @@ fun EmptyTasksState(textColor: Color, iconColor: Color) {
 }
 
 @Composable
-fun DashboardTaskCard(
-    dashboardTask: DashboardTask,
-    primaryText: Color,
-    accentColor: Color,
-    primaryColor: Color
+fun EventCard(
+    event: DashboardTask,
+    onClick: () -> Unit
 ) {
+    val primaryColor = Color(0xFF96E1FF)
+    val accentColor = Color(0xFFCB954A)
+    val primaryText = Color(0xFF4A505D)
+
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy • HH:mm", Locale.getDefault()) }
-    val task = dashboardTask.task
+    val task = event.task
     
     val icon: ImageVector = when(task.type) {
         TaskType.VACCINE -> Icons.Default.MedicalServices
@@ -155,8 +173,9 @@ fun DashboardTaskCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        shape = RoundedCornerShape(16.dp),
+            .padding(vertical = 4.dp)
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
         elevation = CardDefaults.cardElevation(3.dp)
     ) {
@@ -165,10 +184,10 @@ fun DashboardTaskCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Pet Avatar
-            if (dashboardTask.petAvatar != null) {
+            if (event.petAvatar != null) {
                 Image(
-                    painter = rememberAsyncImagePainter(dashboardTask.petAvatar),
-                    contentDescription = dashboardTask.petName,
+                    painter = rememberAsyncImagePainter(event.petAvatar),
+                    contentDescription = event.petName,
                     modifier = Modifier
                         .size(56.dp)
                         .clip(CircleShape),
@@ -190,7 +209,7 @@ fun DashboardTaskCard(
             
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "${dashboardTask.petName} - ${task.type.label}",
+                    text = "${event.petName} - ${task.type.label}",
                     fontWeight = FontWeight.Bold,
                     color = primaryText,
                     style = MaterialTheme.typography.titleMedium
