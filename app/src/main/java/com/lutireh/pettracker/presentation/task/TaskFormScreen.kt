@@ -2,71 +2,45 @@ package com.lutireh.pettracker.presentation.task
 
 import android.app.TimePickerDialog
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.runtime.collectAsState
-import com.lutireh.pettracker.presentation.pet.PetViewModel
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBackIosNew
-import androidx.compose.material.icons.filled.Error
 import androidx.compose.material.icons.filled.Schedule
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberDatePickerState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.DropdownMenuItem
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.lutireh.pettracker.domain.model.PetTaskModel
 import com.lutireh.pettracker.domain.model.TaskType
+import com.lutireh.pettracker.presentation.pet.PetViewModel
 import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
-import java.util.Locale
+import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskFormScreen(
+    taskId: String? = null,
     viewModel: TaskViewModel = hiltViewModel(),
     petViewModel: PetViewModel = hiltViewModel(),
     onTaskSaved: () -> Unit = {},
     onError: () -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
-    var petId by remember { mutableStateOf<Int>(0) }
+    var petId by remember { mutableStateOf(0) }
     var type by remember { mutableStateOf("") }
     var date by remember { mutableStateOf<Long?>(null) }
     var notes by remember { mutableStateOf("") }
     var reminderTime by remember { mutableStateOf<Long?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val pets = petViewModel.pets.collectAsState().value
+    val pets by petViewModel.pets.collectAsState()
     var expandedPet by remember { mutableStateOf(false) }
     var selectedPetName by remember { mutableStateOf("") }
 
@@ -74,29 +48,54 @@ fun TaskFormScreen(
     var expandedType by remember { mutableStateOf(false) }
     var selectedTypeLabel by remember { mutableStateOf("") }
 
+    val selectedTask by viewModel.selectedTask.collectAsState()
+
+    LaunchedEffect(taskId) {
+        if (taskId != null) {
+            viewModel.getTaskById(taskId.toInt())
+        }
+    }
+
+    LaunchedEffect(selectedTask, pets) {
+        if (taskId != null && selectedTask != null && pets.isNotEmpty()) {
+            val task = selectedTask!!
+            petId = task.petId
+            val matchedPet = pets.find { it.id == task.petId }
+            selectedPetName = matchedPet?.name ?: ""
+            type = task.type.name
+            selectedTypeLabel = task.type.label
+            date = task.date
+            if (task.notes != null) notes = task.notes
+            reminderTime = task.reminderTime
+        }
+    }
+
     val primaryColor = Color(0xFF96E1FF)
     val accentColor = Color(0xFFCB954A)
     val backgroundColor = Color(0xFFF3F3F8)
     val textColor = Color(0xFF4A505D)
+
+    val isEditing = taskId != null
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Text(
-                        "🐾 Adicionar Tarefa",
+                        if (isEditing) "🐾 Editar Tarefa" else "🐾 Adicionar Tarefa",
                         color = Color.White,
                         fontWeight = FontWeight.Bold
                     )
                 },
                 navigationIcon = {
-                    Icon(
-                        imageVector = Icons.Default.ArrowBackIosNew,
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier
-                            .size(16.dp)
-                    )
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBackIosNew,
+                            contentDescription = "Voltar",
+                            tint = Color.White,
+                            modifier = Modifier.size(16.dp)
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = accentColor
@@ -114,7 +113,7 @@ fun TaskFormScreen(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                "Preencha os dados da tarefa do seu pet💕",
+                if (isEditing) "Altere os dados da tarefa do seu pet💕" else "Preencha os dados da tarefa do seu pet💕",
                 color = textColor,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.padding(bottom = 24.dp)
@@ -185,13 +184,10 @@ fun TaskFormScreen(
                     taskTypes.forEach { option ->
                         DropdownMenuItem(
                             text = {
-                                Text(
-                                    option.name.replace("_", " ").lowercase()
-                                        .replaceFirstChar(Char::uppercase)
-                                )
+                                Text(option.label)
                             },
                             onClick = {
-                                selectedTypeLabel = option.name
+                                selectedTypeLabel = option.label
                                 type = option.name
                                 expandedType = false
                             }
@@ -202,6 +198,8 @@ fun TaskFormScreen(
 
             TimestampInputField(
                 label = "Data",
+                initialTimestamp = date,
+                key = date,
                 onTimestampSelected = { timestamp ->
                     date = timestamp
                 }
@@ -213,24 +211,55 @@ fun TaskFormScreen(
             )
             TimestampInputField(
                 label = "Data e hora do lembrete",
+                initialTimestamp = reminderTime,
+                key = reminderTime,
                 onTimestampSelected = { timestamp ->
                     reminderTime = timestamp
                 }
             )
+            
+            errorMessage?.let { msg ->
+                Text(
+                    text = msg,
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+            }
+            
             Button(
                 onClick = {
-                    val task = PetTaskModel(
-                        petId = petId,
-                        type = TaskType.valueOf(type),
-                        date = date ?: System.currentTimeMillis(),
-                        notes = notes,
-                        reminderTime = reminderTime
-                    )
-                    viewModel.addTask(task)
-                    if (viewModel.isError.value) {
-                        onError()
+                    val now = System.currentTimeMillis()
+                    val selectedDate = date ?: now
+                    
+                    // Allow 2 minute grace period
+                    val isPastDate = selectedDate < (now - 120000L)
+                    val isPastReminder = reminderTime != null && reminderTime!! < (now - 120000L)
+
+                    if (isPastDate) {
+                        errorMessage = "Coloque uma data e horário futuros para a tarefa."
+                        date = null
+                    } else if (isPastReminder) {
+                        errorMessage = "Coloque uma data e horário futuros para o alarme."
+                        reminderTime = null
+                    } else if (type.isEmpty() || petId == 0) {
+                        errorMessage = "Preencha todos os campos obrigatórios."
                     } else {
-                        onTaskSaved()
+                        errorMessage = null
+                        val task = PetTaskModel(
+                            id = taskId?.toInt() ?: 0,
+                            petId = petId,
+                            type = TaskType.valueOf(type),
+                            date = selectedDate,
+                            notes = notes,
+                            reminderTime = reminderTime
+                        )
+                        viewModel.addTask(task)
+                        if (viewModel.isError.value) {
+                            onError()
+                        } else {
+                            onTaskSaved()
+                        }
                     }
                 },
                 modifier = Modifier
@@ -279,21 +308,24 @@ private fun InputField(
 fun TimestampInputField(
     label: String = "Data e hora",
     initialTimestamp: Long? = null,
+    key: Long? = null,
     onTimestampSelected: (Long) -> Unit
 ) {
     val context = LocalContext.current
     val calendar = remember { Calendar.getInstance() }
 
     var showDatePicker by remember { mutableStateOf(false) }
-    var selectedTimestamp by remember {
-        mutableStateOf(
-            initialTimestamp ?: System.currentTimeMillis()
-        )
+    var selectedTimestamp by remember(initialTimestamp, key) {
+        mutableStateOf(initialTimestamp ?: System.currentTimeMillis())
     }
 
     val dateFormat = remember { SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()) }
     val formattedDate = remember(selectedTimestamp) {
-        dateFormat.format(Date(selectedTimestamp))
+        if (initialTimestamp == null && key == null) {
+            dateFormat.format(Date(System.currentTimeMillis()))
+        } else {
+            dateFormat.format(Date(selectedTimestamp))
+        }
     }
 
     val accentColor = Color(0xFFCB954A)
@@ -341,7 +373,12 @@ fun TimestampInputField(
                     TextButton(onClick = {
                         val pickedDate = dateState.selectedDateMillis
                         if (pickedDate != null) {
-                            calendar.timeInMillis = pickedDate
+                            val utcCalendar = Calendar.getInstance(TimeZone.getTimeZone("UTC"))
+                            utcCalendar.timeInMillis = pickedDate
+                            
+                            calendar.set(Calendar.YEAR, utcCalendar.get(Calendar.YEAR))
+                            calendar.set(Calendar.MONTH, utcCalendar.get(Calendar.MONTH))
+                            calendar.set(Calendar.DAY_OF_MONTH, utcCalendar.get(Calendar.DAY_OF_MONTH))
 
                             TimePickerDialog(
                                 context,

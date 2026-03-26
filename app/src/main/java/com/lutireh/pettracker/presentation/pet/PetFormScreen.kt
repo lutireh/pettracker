@@ -1,4 +1,4 @@
-package com.luiza.pettracker.presentation.pet
+package com.lutireh.pettracker.presentation.pet
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -148,7 +149,8 @@ private fun PetInputField(
             cursorColor = borderColor
         ),
         keyboardOptions = KeyboardOptions.Default.copy(
-            keyboardType = if (shouldShowNumberKeyboard == true) KeyboardType.Number else KeyboardType.Text
+            keyboardType = if (shouldShowNumberKeyboard == true) KeyboardType.Number else KeyboardType.Text,
+            capitalization = KeyboardCapitalization.Words
         )
     )
 }

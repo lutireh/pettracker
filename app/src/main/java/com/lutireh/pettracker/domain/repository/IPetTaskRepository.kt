@@ -5,6 +5,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface IPetTaskRepository {
 
+    suspend fun getAllActivities(): Flow<List<PetTaskModel>>
     suspend fun getActivitiesByPet(petId: Int): Flow<List<PetTaskModel>>
     suspend fun getActivityById(id: Int) : Flow<PetTaskModel?>
     suspend fun insertActivity(taskModel: PetTaskModel)

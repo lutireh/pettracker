@@ -1,16 +1,16 @@
-package com.luiza.pettracker.presentation.pet
+package com.lutireh.pettracker.presentation.pet
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Pets
-import androidx.compose.material.icons.filled.Remove
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,7 +24,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import com.lutireh.pettracker.domain.model.PetModel
-import com.lutireh.pettracker.presentation.pet.PetViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +39,7 @@ fun PetListScreen(
     val primaryColor = Color(0xFF96E1FF)
     val accentColor = Color(0xFFCB954A)
     val backgroundColor = Color(0xFFF3F3F8)
+    val primaryText = Color(0xFF4A505D)
 
     Scaffold(
         topBar = {
@@ -58,15 +58,14 @@ fun PetListScreen(
         },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onAddTaskClick,
+                onClick = onAddPetClick,
                 containerColor = primaryColor,
                 contentColor = Color.White,
                 shape = CircleShape
             ) {
-                Icon(Icons.Default.CalendarMonth, contentDescription = "Adicionar Tarefa")
+                Icon(Icons.Default.Add, contentDescription = "Adicionar Pet")
             }
         },
-
         containerColor = backgroundColor
     ) { padding ->
         Box(
@@ -82,11 +81,11 @@ fun PetListScreen(
                     )
                 }
 
-                pets.isEmpty() -> EmptyPetsState(onAddPetClick)
+                pets.isEmpty() -> EmptyPetsState(primaryText, accentColor)
                 else -> PetsList(
                     pets = pets,
-                    onDelete = { viewModel.deletePet(it.id) },
-                    onAddPetClick = onAddPetClick,
+                    primaryText = primaryText,
+                    primaryColor = primaryColor,
                     onPetClick = onPetClick
                 )
             }
@@ -95,12 +94,7 @@ fun PetListScreen(
 }
 
 @Composable
-fun EmptyPetsState(
-    onAddPetClick: () -> Unit = {}
-) {
-    val iconColor = Color(0xFFB4444C)
-    val textColor = Color(0xFF4A505D)
-
+fun EmptyPetsState(textColor: Color, iconColor: Color) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -116,73 +110,51 @@ fun EmptyPetsState(
         )
         Spacer(modifier = Modifier.height(16.dp))
         Text(
-            text = "Nenhum pet cadastrado ainda 🐾",
+            text = "Nenhum pet cadastrado 🐾",
             color = textColor,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Medium
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = "Adicione o primeiro clicando no botão abaixo!",
+            text = "Clique no botão '+' para adicionar seu primeiro pet!",
             color = textColor.copy(alpha = 0.7f),
             style = MaterialTheme.typography.bodyMedium
         )
-        Spacer(modifier = Modifier.height(24.dp))
-        Button(
-            onClick = onAddPetClick,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = iconColor,
-                contentColor = Color.White
-            ),
-            shape = RoundedCornerShape(50)
-        ) {
-            Text("Adicionar Pet")
-        }
     }
 }
 
 @Composable
 fun PetsList(
     pets: List<PetModel>,
-    onDelete: (PetModel) -> Unit,
-    onAddPetClick: () -> Unit,
+    primaryText: Color,
+    primaryColor: Color,
     onPetClick: (PetModel) -> Unit
 ) {
-    val iconColor = Color(0xFFB4444C)
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFCCCED2))
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .padding(12.dp)
-        ) {
-            Button(
-                onClick = onAddPetClick,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = iconColor,
-                    contentColor = Color.White
-                ),
-                shape = RoundedCornerShape(50)
-            ) {
-                Text("Adicionar Pet")
-            }
+        item {
+            Text(
+                text = "Seus Animais",
+                style = MaterialTheme.typography.titleLarge,
+                color = primaryText,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            )
         }
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 80.dp, start = 12.dp, end = 12.dp, bottom = 8.dp)
-        ) {
-            items(pets.size) { index ->
-                val pet = pets[index]
-                PetCard(
-                    pet = pet,
-                    onDelete= onDelete,
-                    onClick = { onPetClick(pet) })
-            }
+        
+        items(pets) { pet ->
+            PetCard(
+                pet = pet,
+                primaryText = primaryText,
+                primaryColor = primaryColor,
+                onClick = { onPetClick(pet) }
+            )
         }
     }
 }
@@ -190,20 +162,17 @@ fun PetsList(
 @Composable
 fun PetCard(
     pet: PetModel,
-    onDelete: (PetModel) -> Unit,
+    primaryText: Color,
+    primaryColor: Color,
     onClick: () -> Unit
 ) {
-    val cardColor = Color(0xFFFFF6F1)
-    val accentColor = Color(0xFFCB954A)
-    val deleteColor = Color(0xFFB4444C)
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp)
             .clickable { onClick() },
-        colors = CardDefaults.cardColors(containerColor = cardColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
         shape = RoundedCornerShape(16.dp)
     ) {
         Row(
@@ -226,13 +195,13 @@ fun PetCard(
                     modifier = Modifier
                         .size(64.dp)
                         .clip(CircleShape)
-                        .background(accentColor.copy(alpha = 0.2f)),
+                        .background(primaryColor),
                     contentAlignment = Alignment.Center
                 ) {
                     Icon(
                         Icons.Default.Pets,
                         contentDescription = null,
-                        tint = accentColor,
+                        tint = Color.White,
                         modifier = Modifier.size(36.dp)
                     )
                 }
@@ -244,38 +213,29 @@ fun PetCard(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    pet.name,
+                    text = pet.name,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF4A505D),
+                    color = primaryText,
                     style = MaterialTheme.typography.titleMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
+                Spacer(Modifier.height(4.dp))
                 Text(
                     text = pet.breed ?: "Sem raça definida",
-                    color = Color(0xFF6E5223),
+                    color = primaryText.copy(alpha = 0.8f),
                     style = MaterialTheme.typography.bodyMedium
                 )
                 if (!pet.age.isNullOrEmpty() || !pet.weight.isNullOrEmpty()) {
+                    Spacer(Modifier.height(2.dp))
                     Text(
-                        text = "${pet.age} anos  •  ${pet.weight} kg",
-                        color = Color(0xFF4A505D).copy(alpha = 0.7f),
+                        text = (pet.age?.let { "${it} anos" } ?: "") + 
+                               (if (!pet.age.isNullOrEmpty() && !pet.weight.isNullOrEmpty()) "  •  " else "") + 
+                               (pet.weight?.let { "${it} kg" } ?: ""),
+                        color = primaryText.copy(alpha = 0.6f),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-            }
-
-            IconButton(
-                onClick = { onDelete(pet) },
-                modifier = Modifier
-                    .size(40.dp)
-                    .background(deleteColor.copy(alpha = 0.1f), CircleShape)
-            ) {
-                Icon(
-                    Icons.Default.Remove,
-                    contentDescription = "Excluir pet",
-                    tint = deleteColor
-                )
             }
         }
     }

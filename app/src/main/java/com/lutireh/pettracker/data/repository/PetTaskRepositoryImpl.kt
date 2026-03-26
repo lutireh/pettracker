@@ -11,6 +11,9 @@ import kotlinx.coroutines.flow.map
 
 class PetTaskRepositoryImpl(val taskDAO: PetTaskDAO) : IPetTaskRepository {
 
+    override suspend fun getAllActivities(): Flow<List<PetTaskModel>> =
+        taskDAO.getAllActivities().map { list -> list.map { it.toModel() } }
+
     override suspend fun getActivitiesByPet(petId: Int): Flow<List<PetTaskModel>> =
         taskDAO.getActivitiesByPet(petId).map { list -> list.map { it.toModel() } }
 
