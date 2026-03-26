@@ -6,5 +6,6 @@ enum class TaskType(val label: String) {
     FEED("Feed"),
     BATH("Bath"),
     VET("Vet Visit"),
+    EXAM("Exam"),
     OTHER("Other")
 }

@@ -1,4 +1,4 @@
-package com.luiza.pettracker.presentation.pet
+package com.lutireh.pettracker.presentation.pet
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*

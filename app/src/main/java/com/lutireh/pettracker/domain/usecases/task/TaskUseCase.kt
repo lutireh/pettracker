@@ -4,5 +4,6 @@ data class TaskUseCase(
     val addTaskUseCase: AddTaskUseCase,
     val deleteTaskUseCase: DeleteTaskUseCase,
     val getTaskByIdUseCase: GetTaskByIdUseCase,
-    val getPetTaskByPetUseCase: GetPetTaskByPetUseCase
+    val getPetTaskByPetUseCase: GetPetTaskByPetUseCase,
+    val getAllTasksUseCase: GetAllTasksUseCase
 )

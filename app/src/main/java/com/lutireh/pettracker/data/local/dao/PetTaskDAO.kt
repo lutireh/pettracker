@@ -14,6 +14,9 @@ interface PetTaskDAO {
     @Query("SELECT * FROM pet_activities WHERE petId = :petId ORDER BY date DESC")
     fun getActivitiesByPet(petId: Int): Flow<List<TaskEntity>>
 
+    @Query("SELECT * FROM pet_activities ORDER BY date ASC")
+    fun getAllActivities(): Flow<List<TaskEntity>>
+
     @Query("SELECT * FROM pet_activities WHERE id = :taskId LIMIT 1")
     fun getActivityById(taskId: Int): Flow<TaskEntity>
 

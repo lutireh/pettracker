@@ -18,6 +18,7 @@ import com.lutireh.pettracker.domain.usecases.pet.UpdatePetUseCase
 import com.lutireh.pettracker.domain.usecases.task.AddTaskUseCase
 import com.lutireh.pettracker.domain.usecases.task.DeleteTaskUseCase
 import com.lutireh.pettracker.domain.usecases.task.GetPetTaskByPetUseCase
+import com.lutireh.pettracker.domain.usecases.task.GetAllTasksUseCase
 import com.lutireh.pettracker.domain.usecases.task.GetTaskByIdUseCase
 import com.lutireh.pettracker.domain.usecases.task.TaskUseCase
 import dagger.Module
@@ -77,6 +78,7 @@ object AppModule {
             getPetTaskByPetUseCase = GetPetTaskByPetUseCase(repository),
             getTaskByIdUseCase = GetTaskByIdUseCase(repository),
             addTaskUseCase = AddTaskUseCase(repository),
-            deleteTaskUseCase = DeleteTaskUseCase(repository)
+            deleteTaskUseCase = DeleteTaskUseCase(repository),
+            getAllTasksUseCase = GetAllTasksUseCase(repository)
         )
 }
