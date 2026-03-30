@@ -8,3 +8,41 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Android/Gradle build outputs
+**/build/
+**/out/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Kotlin/Java artifacts
+*.class
+*.log
+hs_err_pid*
+replay_pid*
+
+# Android Studio/IntelliJ
+.idea/
+*.ipr
+*.iws
+
+# NDK and CMake
+**/.cxx/
+**/.externalNativeBuild/
+
+# Secrets and local env files
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.jks
+*.keystore
+key.properties
+google-services.json
+app/google-services.json
+
+# OS generated
+Thumbs.db
